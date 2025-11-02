@@ -22,6 +22,8 @@ import {
   settleResponseHeader,
   SupportedEVMNetworks,
   SupportedSVMNetworks,
+  cardano,
+  SupportedCardanoNetworks,
 } from "x402/types";
 import { useFacilitator } from "x402/verify";
 
@@ -73,7 +75,7 @@ import { useFacilitator } from "x402/verify";
  * ```
  */
 export function paymentMiddleware(
-  payTo: Address | SolanaAddress,
+  payTo: Address | SolanaAddress | cardano.CardanoAddress,
   routes: RoutesConfig,
   facilitator?: FacilitatorConfig,
   paywall?: PaywallConfig,
@@ -188,6 +190,37 @@ export function paymentMiddleware(
           feePayer,
         },
       });
+    } else if (SupportedCardanoNetworks.includes(network)) {
+      const paymentRequirement: PaymentRequirements = {
+        scheme: "exact",
+        network,
+        maxAmountRequired,
+        asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+        payTo: "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+        resource: resourceUrl,
+        description: description ?? "",
+        mimeType: mimeType ?? "",
+        maxTimeoutSeconds: maxTimeoutSeconds ?? 600,
+      };
+
+      if (network.includes("masumi")) {
+        // TODO: fill in correct extra fields for masumi
+        paymentRequirement.extra = {
+          identifierFromPurchaser: null,
+          network: network === "cardano-masumi" ? "Mainnet" : "Preprod",
+          sellerVkey: null,
+          paymentType: "Web3CardanoV1",
+          blockchainIdentifier: null,
+          payByTime: null,
+          submitResultTime: null,
+          unlockTime: null,
+          externalDisputeUnlockTime: null,
+          agentIdentifier: null,
+          inputHash: null,
+        };
+      }
+
+      paymentRequirements.push(paymentRequirement);
     } else {
       throw new Error(`Unsupported network: ${network}`);
     }
