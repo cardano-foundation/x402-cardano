@@ -1,6 +1,14 @@
 import { verify as verifyExactEvm, settle as settleExactEvm } from "../schemes/exact/evm";
 import { verify as verifyExactSvm, settle as settleExactSvm } from "../schemes/exact/svm";
-import { SupportedEVMNetworks, SupportedSVMNetworks } from "../types/shared";
+import {
+  verify as verifyExactCardano,
+  settle as settleExactCardano,
+} from "../schemes/exact/cardano";
+import {
+  SupportedCardanoNetworks,
+  SupportedEVMNetworks,
+  SupportedSVMNetworks,
+} from "../types/shared";
 import { X402Config } from "../types/config";
 import {
   ConnectedClient as EvmConnectedClient,
@@ -16,6 +24,7 @@ import {
 } from "../types/verify";
 import { Chain, Transport, Account } from "viem";
 import { KeyPairSigner } from "@solana/kit";
+import { CardanoWallet } from "../shared/cardano/wallet";
 
 /**
  * Verifies a payment payload against the required payment details regardless of the scheme
@@ -51,6 +60,16 @@ export async function verify<
     // svm
     if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       return await verifyExactSvm(client as KeyPairSigner, payload, paymentRequirements, config);
+    }
+
+    // cardano
+    if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
+      return await verifyExactCardano(
+        client as CardanoWallet,
+        payload,
+        paymentRequirements,
+        config,
+      );
     }
   }
 
@@ -94,6 +113,16 @@ export async function settle<transport extends Transport, chain extends Chain>(
     // svm
     if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       return await settleExactSvm(client as KeyPairSigner, payload, paymentRequirements, config);
+    }
+
+    // cardano
+    if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
+      return await settleExactCardano(
+        client as CardanoWallet,
+        payload,
+        paymentRequirements,
+        config,
+      );
     }
   }
 

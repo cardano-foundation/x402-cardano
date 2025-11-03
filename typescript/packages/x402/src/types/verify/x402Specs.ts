@@ -102,6 +102,11 @@ export const ExactSvmPayloadSchema = z.object({
 });
 export type ExactSvmPayload = z.infer<typeof ExactSvmPayloadSchema>;
 
+export const ExactCardanoPayloadSchema = z.object({
+  transaction: z.string().regex(Base64EncodedRegex),
+});
+export type ExactCardanoPayload = z.infer<typeof ExactCardanoPayloadSchema>;
+
 // x402PaymentPayload
 export const PaymentPayloadSchema = z.object({
   x402Version: z.number().refine(val => x402Versions.includes(val as 1)),

@@ -6,3 +6,4 @@ export * from "./wallet";
 export * as evm from "./evm";
 export * as svm from "./svm";
 export * as cardano from "./cardano";
+export type { CardanoAddress } from "./cardano";

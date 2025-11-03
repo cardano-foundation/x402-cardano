@@ -55,7 +55,17 @@ export interface SPLTokenAmount {
   };
 }
 
-export type Price = Money | ERC20TokenAmount | SPLTokenAmount;
+export interface CardanoNativeAssetAmount {
+  amount: string;
+  asset: {
+    address: string;
+    policyId: string;
+    assetName: string;
+    decimals: number;
+  };
+}
+
+export type Price = Money | ERC20TokenAmount | SPLTokenAmount | CardanoNativeAssetAmount;
 
 export interface RouteConfig {
   price: Price;
