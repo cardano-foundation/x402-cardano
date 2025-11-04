@@ -16,15 +16,17 @@ import {
   SupportedPaymentKind,
   isSvmSignerWallet,
   type X402Config,
+  SupportedCardanoNetworks,
 } from "x402/types";
 
 config();
 
 const EVM_PRIVATE_KEY = process.env.EVM_PRIVATE_KEY || "";
 const SVM_PRIVATE_KEY = process.env.SVM_PRIVATE_KEY || "";
+const CARDANO_PRIVATE_KEY = process.env.CARDANO_PRIVATE_KEY || "";
 const SVM_RPC_URL = process.env.SVM_RPC_URL || "";
 
-if (!EVM_PRIVATE_KEY && !SVM_PRIVATE_KEY) {
+if (!EVM_PRIVATE_KEY && !SVM_PRIVATE_KEY && !CARDANO_PRIVATE_KEY) {
   console.error("Missing required environment variables");
   process.exit(1);
 }
@@ -73,6 +75,8 @@ app.post("/verify", async (req: Request, res: Response) => {
       client = createConnectedClient(paymentRequirements.network);
     } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       client = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
+    } else if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
+      client = await createSigner(paymentRequirements.network, CARDANO_PRIVATE_KEY);
     } else {
       throw new Error("Invalid network");
     }
@@ -123,6 +127,16 @@ app.get("/supported", async (req: Request, res: Response) => {
       },
     });
   }
+
+  // cardano
+  if (CARDANO_PRIVATE_KEY) {
+    kinds.push({
+      x402Version: 1,
+      scheme: "exact",
+      network: "cardano-preprod",
+    });
+  }
+
   res.json({
     kinds,
   });
@@ -140,6 +154,8 @@ app.post("/settle", async (req: Request, res: Response) => {
       signer = await createSigner(paymentRequirements.network, EVM_PRIVATE_KEY);
     } else if (SupportedSVMNetworks.includes(paymentRequirements.network)) {
       signer = await createSigner(paymentRequirements.network, SVM_PRIVATE_KEY);
+    } else if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
+      signer = await createSigner(paymentRequirements.network, CARDANO_PRIVATE_KEY);
     } else {
       throw new Error("Invalid network");
     }

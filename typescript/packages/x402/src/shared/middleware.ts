@@ -9,11 +9,14 @@ import {
   PaymentRequirements,
   PaymentPayload,
   SPLTokenAmount,
+  CardanoNativeAssetAmount,
 } from "../types";
 import { RoutesConfig } from "../types";
 import { safeBase64Decode } from "./base64";
 import { getUsdcChainConfigForChain } from "./evm";
 import { getNetworkId } from "./network";
+import { getPolicyId } from "../types/shared/cardano";
+import { policyId } from "@meshsdk/core";
 
 /**
  * Computes the route patterns for the given routes config
@@ -123,6 +126,17 @@ export function findMatchingRoute(
  */
 export function getDefaultAsset(network: Network) {
   const chainId = getNetworkId(network);
+
+  if (network.startsWith("cardano")) {
+    const usdmPolicyId = getPolicyId("USDM", network);
+    return {
+      policyId: usdmPolicyId,
+      assetName: "USDM",
+      decimals: 6,
+      address: "",
+    };
+  }
+
   const usdc = getUsdcChainConfigForChain(chainId);
   if (!usdc) {
     throw new Error(`Unable to get default asset on ${network}`);
@@ -148,11 +162,20 @@ export function processPriceToAtomicAmount(
   price: Price,
   network: Network,
 ):
-  | { maxAmountRequired: string; asset: ERC20TokenAmount["asset"] | SPLTokenAmount["asset"] }
+  | {
+      maxAmountRequired: string;
+      asset:
+        | ERC20TokenAmount["asset"]
+        | SPLTokenAmount["asset"]
+        | CardanoNativeAssetAmount["asset"];
+    }
   | { error: string } {
   // Handle USDC amount (string) or token amount (ERC20TokenAmount)
   let maxAmountRequired: string;
-  let asset: ERC20TokenAmount["asset"] | SPLTokenAmount["asset"];
+  let asset:
+    | ERC20TokenAmount["asset"]
+    | SPLTokenAmount["asset"]
+    | CardanoNativeAssetAmount["asset"];
 
   if (typeof price === "string" || typeof price === "number") {
     // USDC amount in dollars

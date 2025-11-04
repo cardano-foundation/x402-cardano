@@ -24,7 +24,7 @@ import {
 } from "../types/verify";
 import { Chain, Transport, Account } from "viem";
 import { KeyPairSigner } from "@solana/kit";
-import { CardanoWallet } from "../shared/cardano/wallet";
+import { CardanoSigner } from "../shared/cardano/wallet";
 
 /**
  * Verifies a payment payload against the required payment details regardless of the scheme
@@ -65,7 +65,7 @@ export async function verify<
     // cardano
     if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
       return await verifyExactCardano(
-        client as CardanoWallet,
+        client as unknown as CardanoSigner,
         payload,
         paymentRequirements,
         config,
@@ -118,7 +118,7 @@ export async function settle<transport extends Transport, chain extends Chain>(
     // cardano
     if (SupportedCardanoNetworks.includes(paymentRequirements.network)) {
       return await settleExactCardano(
-        client as CardanoWallet,
+        client as unknown as CardanoSigner,
         payload,
         paymentRequirements,
         config,

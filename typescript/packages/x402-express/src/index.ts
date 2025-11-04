@@ -23,7 +23,9 @@ import {
   SupportedEVMNetworks,
   SupportedSVMNetworks,
   cardano,
+  CardanoAddress,
   SupportedCardanoNetworks,
+  CardanoNativeAssetAmount,
 } from "x402/types";
 import { useFacilitator } from "x402/verify";
 
@@ -75,7 +77,7 @@ import { useFacilitator } from "x402/verify";
  * ```
  */
 export function paymentMiddleware(
-  payTo: Address | SolanaAddress | cardano.CardanoAddress,
+  payTo: Address | SolanaAddress | CardanoAddress,
   routes: RoutesConfig,
   facilitator?: FacilitatorConfig,
   paywall?: PaywallConfig,
@@ -119,7 +121,6 @@ export function paymentMiddleware(
       resource || (`${req.protocol}://${req.headers.host}${req.path}` as Resource);
 
     let paymentRequirements: PaymentRequirements[] = [];
-
     // TODO: create a shared middleware function to build payment requirements
     // evm networks
     if (SupportedEVMNetworks.includes(network)) {
@@ -191,12 +192,13 @@ export function paymentMiddleware(
         },
       });
     } else if (SupportedCardanoNetworks.includes(network)) {
+      const cardanoNativeAsset = asset as CardanoNativeAssetAmount["asset"];
       const paymentRequirement: PaymentRequirements = {
         scheme: "exact",
         network,
         maxAmountRequired,
-        asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-        payTo: "0x209693Bc6afc0C5328bA36FaF03C514EF312287C",
+        asset: `${cardanoNativeAsset.policyId}.${cardano.getAssetNameHex(cardanoNativeAsset.assetName)}`,
+        payTo: payTo,
         resource: resourceUrl,
         description: description ?? "",
         mimeType: mimeType ?? "",
@@ -386,5 +388,6 @@ export type {
   Resource,
   RouteConfig,
   RoutesConfig,
+  CardanoAddress,
 } from "x402/types";
 export type { Address as SolanaAddress } from "@solana/kit";
